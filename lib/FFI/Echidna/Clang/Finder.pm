@@ -48,6 +48,8 @@ sub new
       }
     }
   }
+  # unusual in that the constructor returns undef (or empty list actually)
+  # rather than die'ing.
   return;
 }
 

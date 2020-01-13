@@ -13,3 +13,4 @@ pod_coverage:
   # for either Class or method.
   private:
     - FFI::Echidna::Clang::Finder
+    - FFI::Echidna::Clang::Wrapper
