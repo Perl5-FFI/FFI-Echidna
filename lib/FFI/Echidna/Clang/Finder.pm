@@ -3,6 +3,7 @@ package FFI::Echidna::Clang::Finder;
 use strict;
 use warnings;
 use 5.020;
+use feature 'postderef';
 use Config;
 use JSON::MaybeXS qw( decode_json );
 use Capture::Tiny qw( capture );
@@ -123,8 +124,9 @@ sub diag
   push @list, [ 'path'    => $self->path          ];
   push @list, [ 'version' => $self->human_version ];
 
-  while(my($k,$v) = each %{ $self->kv })
+  foreach my $k (sort keys $self->kv->%*)
   {
+    my $v = $self->kv->{$k};
     push @list, [ $k => $v ];
   }
 
