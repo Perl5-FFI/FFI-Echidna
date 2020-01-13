@@ -4,3 +4,5 @@ set -ex
 
 cip sudo apt-get update
 cip sudo apt-get install clang-9
+
+cip mkdir ~/tmp

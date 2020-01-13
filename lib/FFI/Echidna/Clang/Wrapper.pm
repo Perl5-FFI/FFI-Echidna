@@ -60,7 +60,7 @@ sub version
       print "[$c_file]\n";
       print $c_file->slurp, "\n";
       my @cmd = ($self->path, -o => 'clang_version', $c_file);
-      print "+@cmd";
+      print "+@cmd\n";
       system @cmd;
       $?;
     };
@@ -75,7 +75,7 @@ sub version
       print "[$c_file]\n";
       print $c_file->slurp, "\n";
       my @cmd = ('./clang_version', '-foo');
-      print "+@cmd";
+      print "+@cmd\n";
       system @cmd;
       $?;
     };
