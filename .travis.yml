@@ -12,13 +12,8 @@ script:
   - cip script
 jobs:
   include:
-    - env: CIP_TAG=5.31
-    - env: CIP_TAG=5.30
-    - env: CIP_TAG=5.28
-    - env: CIP_TAG=5.26
-    - env: CIP_TAG=5.24
-    - env: CIP_TAG=5.22
-    - env: CIP_TAG=5.20
+    - env: CIP_TAG=5.30-bullseye
+    - env: CIP_TAG=5.30-bullseye32
 cache:
   directories:
     - "$HOME/.cip"

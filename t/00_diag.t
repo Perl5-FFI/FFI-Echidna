@@ -10,11 +10,22 @@ my %modules;
 my $post_diag;
 
 $modules{$_} = $_ for qw(
+  Capture::Tiny
+  Cpanel::JSON::XS
   ExtUtils::MakeMaker
+  File::Which
+  File::chdir
+  JSON::MaybeXS
+  JSON::PP
+  JSON::XS
+  Path::Tiny
   Test2::V0
 );
 
-
+$post_diag = sub {
+  require './lib/FFI/Echidna/Clang/Finder.pm';
+  diag $_ for FFI::Echidna::Clang::Finder->new->diag;
+};
 
 my @modules = sort keys %modules;
 
