@@ -7,4 +7,4 @@ cip sudo apt-get install clang-9
 
 # use ~/tmp as a workaround for the fact
 # that /tmp is noexec in CI
-cip exec mkdir ~/tmp
+cip exec mkdir /home/cip/tmp
