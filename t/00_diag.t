@@ -23,8 +23,8 @@ $modules{$_} = $_ for qw(
 );
 
 $post_diag = sub {
-  require './lib/FFI/Echidna/Clang/Finder.pm';
-  diag $_ for FFI::Echidna::Clang::Finder->new->diag;
+  require './lib/FFI/Echidna/FE/Clang/Finder.pm';
+  diag $_ for FFI::Echidna::FE::Clang::Finder->new->diag;
 };
 
 my @modules = sort keys %modules;

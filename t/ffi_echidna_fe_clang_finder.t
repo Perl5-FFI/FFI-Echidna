@@ -1,5 +1,5 @@
 use Test2::V0 -no_srand => 1;
-use FFI::Echidna::Clang::Finder;
+use FFI::Echidna::FE::Clang::Finder;
 
 ok 1, 'todo';
 

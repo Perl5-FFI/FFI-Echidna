@@ -1,4 +1,4 @@
-package FFI::Echidna::Clang::Finder;
+package FFI::Echidna::FE::Clang::Finder;
 
 use strict;
 use warnings;
@@ -16,7 +16,7 @@ use File::chdir;
 
 =head1 DESCRIPTION
 
-This module is used internally by L<FFI::Echidna::Clang>.
+This module is used internally by L<FFI::Echidna::FE::Clang>.
 
 =head1 SEE ALSO
 
@@ -24,7 +24,7 @@ This module is used internally by L<FFI::Echidna::Clang>.
 
 =item L<FFI::Echidna>
 
-=item L<FFI::Echidna::Clang>
+=item L<FFI::Echidna::FE::Clang>
 
 =back
 

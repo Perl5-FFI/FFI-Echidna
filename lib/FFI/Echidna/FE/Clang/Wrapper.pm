@@ -1,9 +1,9 @@
-package FFI::Echidna::Clang::Wrapper;
+package FFI::Echidna::FE::Clang::Wrapper;
 
 use strict;
 use warnings;
 use 5.020;
-use FFI::Echidna::Clang::Finder;
+use FFI::Echidna::FE::Clang::Finder;
 use Capture::Tiny qw( capture_merged );
 use File::chdir;
 use Path::Tiny ();
@@ -13,7 +13,7 @@ use Path::Tiny ();
 
 =head1 DESCRIPTION
 
-This module is used internally by L<FFI::Echidna::Clang>.
+This module is used internally by L<FFI::Echidna::FE::Clang>.
 
 =head1 SEE ALSO
 
@@ -21,7 +21,7 @@ This module is used internally by L<FFI::Echidna::Clang>.
 
 =item L<FFI::Echidna>
 
-=item L<FFI::Echidna::Clang>
+=item L<FFI::Echidna::FE::Clang>
 
 =back
 
@@ -31,7 +31,7 @@ sub new
 {
   my($class, $path) = @_;
 
-  my $finder = FFI::Echidna::Clang::Finder->new($path);
+  my $finder = FFI::Echidna::FE::Clang::Finder->new($path);
   die "clang not found" unless defined $finder;
   $path = $finder->path;
 
