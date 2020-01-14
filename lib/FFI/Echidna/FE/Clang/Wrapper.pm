@@ -175,7 +175,7 @@ sub get_raw_macros
     {
       my($name, $value) = ($1, $2);
       next unless $self->macro_filter->($name);
-      push @macros, FFI::Echidna::FE::Clang::Macro->new($name => $value);
+      push @macros, FFI::Echidna::FE::Clang::Macro->new($name => $value, $self);
     }
   }
 

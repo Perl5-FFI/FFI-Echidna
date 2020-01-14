@@ -48,7 +48,10 @@ subtest 'raw macros' => sub {
     bag {
       item object {
         call name => 'FOO';
-        call value => 1
+        call value => 1;
+        call wrapper => object {
+          call ['isa', 'FFI::Echidna::FE::Clang::Wrapper'] => T();
+        };
       };
       item object {
         call name => 'BAR';

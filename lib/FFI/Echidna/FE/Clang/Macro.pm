@@ -9,12 +9,23 @@ use overload '""' => sub { shift->as_string };
 
 sub new
 {
-  my($class, $name, $value) = @_;
-  bless { name => $name, value => $value }, $class;
+  my($class, $name, $value, $wrapper) = @_;
+
+  $wrapper ||= do {
+    require FFI::Echidna::FE::Clang::Wrapper;
+    FFI::Echidna::FE::Clang::Wrapper->new;
+  };
+
+  bless {
+    name    => $name,
+    value   => $value,
+    wrapper => $wrapper,
+  }, $class;
 }
 
-sub name  { shift->{name}  }
-sub value { shift->{value} }
+sub name    { shift->{name}  }
+sub value   { shift->{value} }
+sub wrapper { shift->{wrapper} }
 
 sub as_string
 {
