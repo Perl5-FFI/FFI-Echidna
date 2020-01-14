@@ -8,6 +8,12 @@ pod_spelling_system:
   stopwords:
     - ro
     - rw
+    - AST
+    - bullseye
+    - echidna
+    - eoan
+    - Xcode
+    - llvm
 
 pod_coverage:
   skip: 0
