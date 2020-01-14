@@ -37,7 +37,7 @@ sub new
   if(defined $path) {
     $path = which $path;
   } else {
-    foreach my $maybe ($ENV{FFI_ECHIDNA_CLANG}, $ENV{CLANG}, 'clang', 'clang-9', 'clang-10', $ENV{CC}, $Config{cc})
+    foreach my $maybe ($ENV{FFI_ECHIDNA_CLANG}, $ENV{CLANG}, 'clang', 'clang-10', 'clang-9', $ENV{CC}, $Config{cc})
     {
       next unless defined $maybe;
       my @maybe = shellwords($maybe);
