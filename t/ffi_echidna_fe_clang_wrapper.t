@@ -13,7 +13,7 @@ subtest 'basic construction' => sub {
   my $mock = mock 'FFI::Echidna::FE::Clang::Finder' => (
     override => [
       new => sub { return; },
-    ],
+     ],
   );
 
   local $@ = '';
@@ -31,6 +31,41 @@ subtest 'version' => sub {
   like $version, qr/^[0-9]+\.[0-9]+\.[0-9]+$/;
 
   note "version = $version";
+
+};
+
+subtest 'raw macros' => sub {
+
+  my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new(
+    cflags => '-Icorpus/ffi_echidna_fe_clang_wrapper/macro',
+  );
+
+  my @macros = $wrapper->get_raw_macros( headers => ['macro1.h','macro2.h'] );
+
+  is
+    \@macros,
+    bag {
+      item object {
+        call name => 'FOO';
+        call value => 1
+      };
+      item object {
+        call name => 'BAR';
+        call value => '"hello"';
+      };
+      item object {
+        call name => 'BAZ';
+        call value => 42;
+      };
+      item object {
+        call name => 'SOMETHING_ELSE';
+        call value => '1-2-4*5 & 44';
+      };
+      etc;
+    }
+  ;
+
+  note $_ for @macros;
 
 };
 

@@ -5,9 +5,10 @@ use warnings;
 use 5.020;
 use feature 'postderef';
 use FFI::Echidna::FE::Clang::Finder;
-use Capture::Tiny qw( capture_merged );
+use Capture::Tiny qw( capture_merged capture );
 use File::chdir;
 use Path::Tiny ();
+use Text::ParseWords qw( shellwords );
 
 # ABSTRACT: Clang wrapper
 # VERSION
@@ -47,7 +48,7 @@ sub new
   }
   elsif(ref $args{cflags} eq '')
   {
-    @cflags = ($args{cflags});
+    @cflags = (shellwords $args{cflags});
   }
 
   bless {
@@ -115,6 +116,62 @@ sub version
       die "parse failed while trying to determine clang version";
     }
   };
+}
+
+sub get_raw_macros
+{
+  my($self, %args) = @_;
+
+  my @headers;
+  if(ref $args{headers} eq 'ARRAY')
+  {
+    @headers = $args{headers}->@*;
+  }
+  else
+  {
+    @headers = ($args{headers});
+  }
+
+  my $filter = $args{filter} // sub { $_[0] !~ /^_/ };
+
+  my $dir = Path::Tiny->tempdir;
+
+  my $c_file = $dir->child('header.c');
+  $c_file->spew(join "\n",
+                map { "#include <$_>" }
+                @headers
+  );
+
+  my($out, $err, $ret) = capture {
+      print "[$c_file]\n";
+      print $c_file->slurp, "\n";
+      my @cmd = ($self->cc, $self->cflags, '-dM', '-E', $c_file);
+      print "+@cmd\n";
+      system @cmd;
+      $?;
+  };
+
+  if($ret)
+  {
+    print STDERR $out;
+    print STDERR $err;
+    die "CPP failed extracting macros";
+  }
+
+  my @macros;
+  require FFI::Echidna::FE::Clang::Macro;
+
+  foreach my $line (split /\n/, $out)
+  {
+    if($line =~ /^#define\s+(.*?)\s+(.*?)$/)
+    {
+      my($name, $value) = ($1, $2);
+      next unless $filter->($name);
+      push @macros, FFI::Echidna::FE::Clang::Macro->new($name => $value);
+    }
+  }
+
+  @macros;
 }
 
 1;

@@ -14,3 +14,4 @@ pod_coverage:
   private:
     - FFI::Echidna::FE::Clang::Finder
     - FFI::Echidna::FE::Clang::Wrapper
+    - FFI::Echidna::FE::Clang::Macro
