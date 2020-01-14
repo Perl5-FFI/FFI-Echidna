@@ -3,6 +3,7 @@ package FFI::Echidna::FE::Clang::Wrapper;
 use strict;
 use warnings;
 use 5.020;
+use feature 'postderef';
 use FFI::Echidna::FE::Clang::Finder;
 use Capture::Tiny qw( capture_merged );
 use File::chdir;
@@ -29,20 +30,38 @@ This module is used internally by L<FFI::Echidna::FE::Clang>.
 
 sub new
 {
-  my($class, $path) = @_;
+  my($class, %args) = @_;
 
-  my $finder = FFI::Echidna::FE::Clang::Finder->new($path);
+  my $finder = FFI::Echidna::FE::Clang::Finder->new($args{path});
   die "clang not found" unless defined $finder;
-  $path = $finder->path;
+  my $path = $finder->path;
+
+  my @cflags = ();
+  if(!defined $args{cflags})
+  {
+    # do nothing
+  }
+  elsif(ref $args{cflags} eq 'ARRAY')
+  {
+    @cflags = $args{cflags}->@*;
+  }
+  elsif(ref $args{cflags} eq '')
+  {
+    @cflags = ($args{cflags});
+  }
 
   bless {
     finder => $finder,
+    cc     => [$finder->cc],
     path   => $path,
+    cflags => \@cflags,
   }, $class;
 }
 
-sub finder { shift->{finder} }
-sub path   { shift->{path}   }
+sub finder { shift->{finder}     }
+sub path   { shift->{path}       }
+sub cc     { shift->{cc}->@*     }
+sub cflags { shift->{cflags}->@* }
 
 sub version
 {
@@ -59,7 +78,7 @@ sub version
     my($out, $ret) = capture_merged {
       print "[$c_file]\n";
       print $c_file->slurp, "\n";
-      my @cmd = ($self->path, -o => 'clang_version', $c_file);
+      my @cmd = ($self->cc, $self->cflags, -o => 'clang_version', $c_file);
       print "+@cmd\n";
       system @cmd;
       $?;

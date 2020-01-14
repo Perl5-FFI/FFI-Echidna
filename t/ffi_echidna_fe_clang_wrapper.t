@@ -7,6 +7,9 @@ subtest 'basic construction' => sub {
   isa_ok $wrapper, 'FFI::Echidna::FE::Clang::Wrapper';
   isa_ok $wrapper->finder, 'FFI::Echidna::FE::Clang::Finder';
 
+  note "wrapper.path = @{[ $wrapper->path ]}";
+  note "wrapper.cc   = @{[ $wrapper->cc ]}";
+
   my $mock = mock 'FFI::Echidna::FE::Clang::Finder' => (
     override => [
       new => sub { return; },

@@ -10,6 +10,7 @@ use Capture::Tiny qw( capture );
 use File::Which qw( which );
 use Path::Tiny qw( tempdir );
 use File::chdir;
+use Text::ParseWords qw( shellwords );
 
 # ABSTRACT: Clang path finder
 # VERSION
@@ -39,11 +40,14 @@ sub new
     foreach my $maybe ($ENV{FFI_ECHIDNA_CLANG}, $ENV{CLANG}, 'clang', 'clang-9', 'clang-10', $ENV{CC}, $Config{cc})
     {
       next unless defined $maybe;
-      $path = which $maybe;
+      my @maybe = shellwords($maybe);
+      $path = which $maybe[0];
 
       if(defined $path)
       {
-        my $self = bless { path => Path::Tiny->new($path) }, $class;
+        my @cc = @maybe;
+        $cc[0] = $path;
+        my $self = bless { path => Path::Tiny->new($path), cc => \@cc }, $class;
         return $self if $self->good_enough;
       }
     }
@@ -53,10 +57,8 @@ sub new
   return;
 }
 
-sub path
-{
-  shift->{path};
-}
+sub path { shift->{path}   }
+sub cc   { shift->{cc}->@* }
 
 sub human_version
 {
@@ -64,7 +66,7 @@ sub human_version
 
   $self->{human_version} ||= do {
     my($out, $err, $ret) = capture {
-      system($self->path, '--version');
+      system($self->cc, '--version');
       $?;
     };
     die "unable to determine human readable version" if $?;
@@ -104,7 +106,9 @@ sub good_enough
                 "extern foo_t bar(foo_t one, const char *two);\n");
 
   my($out, $err, $ret) = capture {
-    system($self->path, '-Xclang', '-ast-dump=json', '-fsyntax-only', $c_file);
+    my @cmd = ($self->cc, '-Xclang', '-ast-dump=json', '-fsyntax-only', $c_file);
+    #print "+@cmd\n";
+    system @cmd;
     $?;
   };
 
@@ -124,6 +128,7 @@ sub diag
   my @list;
 
   push @list, [ 'path'    => $self->path          ];
+  push @list, [ 'cc'      => join(' ', $self->cc) ] if $self->cc > 1;
   push @list, [ 'version' => $self->human_version ];
 
   foreach my $k (sort keys $self->kv->%*)
