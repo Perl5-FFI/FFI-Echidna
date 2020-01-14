@@ -38,9 +38,10 @@ subtest 'raw macros' => sub {
 
   my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new(
     cflags => '-Icorpus/ffi_echidna_fe_clang_wrapper/macro',
+    headers => ['macro1.h','macro2.h'],
   );
 
-  my @macros = $wrapper->get_raw_macros( headers => ['macro1.h','macro2.h'] );
+  my @macros = $wrapper->get_raw_macros;
 
   is
     \@macros,

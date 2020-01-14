@@ -33,7 +33,7 @@ sub new
 {
   my($class, %args) = @_;
 
-  my $finder = FFI::Echidna::FE::Clang::Finder->new($args{path});
+  my $finder = $args{finder} // FFI::Echidna::FE::Clang::Finder->new($args{path});
   die "clang not found" unless defined $finder;
   my $path = $finder->path;
 
@@ -51,18 +51,38 @@ sub new
     @cflags = (shellwords $args{cflags});
   }
 
+  my @headers;
+  if(!defined $args{headers})
+  {
+    # do nothing
+  }
+  elsif(ref $args{headers} eq 'ARRAY')
+  {
+    @headers = $args{headers}->@*;
+  }
+  else
+  {
+    @headers = ($args{headers});
+  }
+
+  my $macro_filter = $args{macro_filter} // sub { $_[0] !~ /^_/ && $_[0] !~ /\(/ };
+
   bless {
-    finder => $finder,
-    cc     => [$finder->cc],
-    path   => $path,
-    cflags => \@cflags,
+    finder       => $finder,
+    cc           => [$finder->cc],
+    path         => $path,
+    cflags       => \@cflags,
+    headers      => \@headers,
+    macro_filter => $macro_filter,
   }, $class;
 }
 
-sub finder { shift->{finder}     }
-sub path   { shift->{path}       }
-sub cc     { shift->{cc}->@*     }
-sub cflags { shift->{cflags}->@* }
+sub finder       { shift->{finder}      }
+sub path         { shift->{path}        }
+sub cc           { shift->{cc}->@*      }
+sub cflags       { shift->{cflags}->@*  }
+sub headers      { shift->{headers}->@* }
+sub macro_filter { shift->{macro_filter} }
 
 sub version
 {
@@ -122,24 +142,12 @@ sub get_raw_macros
 {
   my($self, %args) = @_;
 
-  my @headers;
-  if(ref $args{headers} eq 'ARRAY')
-  {
-    @headers = $args{headers}->@*;
-  }
-  else
-  {
-    @headers = ($args{headers});
-  }
-
-  my $filter = $args{filter} // sub { $_[0] !~ /^_/ && $_[0] !~ /\(/ };
-
   my $dir = Path::Tiny->tempdir;
 
   my $c_file = $dir->child('header.c');
   $c_file->spew(join "\n",
                 map { "#include <$_>" }
-                @headers
+                $self->headers
   );
 
   my($out, $err, $ret) = capture {
@@ -166,7 +174,7 @@ sub get_raw_macros
     if($line =~ /^#define\s+(.*?)\s+(.*?)$/)
     {
       my($name, $value) = ($1, $2);
-      next unless $filter->($name);
+      next unless $self->macro_filter->($name);
       push @macros, FFI::Echidna::FE::Clang::Macro->new($name => $value);
     }
   }
