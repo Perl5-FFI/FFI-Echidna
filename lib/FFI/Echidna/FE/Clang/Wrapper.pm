@@ -132,7 +132,7 @@ sub get_raw_macros
     @headers = ($args{headers});
   }
 
-  my $filter = $args{filter} // sub { $_[0] !~ /^_/ };
+  my $filter = $args{filter} // sub { $_[0] !~ /^_/ && $_[0] !~ /\(/ };
 
   my $dir = Path::Tiny->tempdir;
 
