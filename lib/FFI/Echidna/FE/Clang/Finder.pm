@@ -97,8 +97,6 @@ sub good_enough
 {
   my($self) = @_;
 
-  return 1;
-
   my $dir = tempdir;
   local $CWD = $dir;
 

@@ -44,7 +44,7 @@ sub new
 
   $path = $path->absolute unless $path->is_absolute;
 
-  bless [ $path, $line, $column ];
+  bless [ $path, $line, $column ], $class;
 }
 
 =head1 ATTRIBUTES

@@ -2,7 +2,10 @@ package FFI::Echidna::FE::Clang::Macro;
 
 use strict;
 use warnings;
-use overload '""' => sub { shift->as_string };
+use overload
+  '""' => sub { shift->as_string },
+  bool => sub { 1 },
+  fallback => 1;
 
 # ABSTRACT: Clang macro declaration
 # VERSION

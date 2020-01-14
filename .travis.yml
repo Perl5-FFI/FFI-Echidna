@@ -12,6 +12,7 @@ script:
   - cip script
 jobs:
   include:
+    - env: CIP_TAG=static
     - env: CIP_TAG=5.30-bullseye   CIP_ENV=TMPDIR=/home/cip/tmp
     - env: CIP_TAG=5.30-bullseye32 CIP_ENV=TMPDIR=/home/cip/tmp
 cache:
