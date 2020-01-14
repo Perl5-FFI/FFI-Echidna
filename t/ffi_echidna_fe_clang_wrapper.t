@@ -63,7 +63,7 @@ subtest 'raw macros' => sub {
       };
       item object {
         call name => 'SOMETHING_ELSE';
-        call value => '1-2-4*5 & 44';
+        call value => '((1-2+4*5) & 0xf)';
       };
       etc;
     }
