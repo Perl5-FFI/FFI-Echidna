@@ -14,6 +14,7 @@ pod_spelling_system:
     - eoan
     - Xcode
     - llvm
+    - libs
 
 pod_coverage:
   skip: 0

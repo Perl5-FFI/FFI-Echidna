@@ -12,6 +12,7 @@ my $post_diag;
 $modules{$_} = $_ for qw(
   Capture::Tiny
   Cpanel::JSON::XS
+  Data::Dumper
   ExtUtils::MakeMaker
   File::Which
   File::chdir

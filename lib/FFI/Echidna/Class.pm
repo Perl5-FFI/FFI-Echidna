@@ -41,7 +41,7 @@ sub new
     libs      => \@libs,
     constants => $args{constants} || [],
     functions => $args{functions} || [],
-  };
+  }, $class;
 }
 
 =head1 ATTRIBUTES
