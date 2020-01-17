@@ -14,6 +14,7 @@ $modules{$_} = $_ for qw(
   Cpanel::JSON::XS
   Data::Dumper
   ExtUtils::MakeMaker
+  File::ShareDir::Install
   File::Which
   File::chdir
   JSON::MaybeXS
@@ -96,3 +97,4 @@ if($post_diag)
 spacer;
 
 done_testing;
+
