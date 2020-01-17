@@ -18,6 +18,7 @@ $modules{$_} = $_ for qw(
   JSON::MaybeXS
   JSON::PP
   JSON::XS
+  Mojolicious
   Path::Tiny
   Test2::V0
 );

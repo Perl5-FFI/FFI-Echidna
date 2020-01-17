@@ -1,0 +1,16 @@
+package <%= $perl->package_name($class) %>;
+
+use strict;
+use warnings;
+use FFI::Platypus <%= $perl->minimum_platypus($class) %>;
+% foreach my $constant ($class->constants) {
+use constant <=% $perl->const_name($constant) %> => <%= $perl->const_value($constant) %>;
+% }
+
+my $ffi = FFI::FFI::Platypus->new( api => 1, lib => <%= $perl->lib($class) %>);
+
+% foreach my $function ($class->functions) {
+$ffi->attach( <%= $perl->function_name($function) %> => <%= $perl->function_args($function) %> => <%= $perl->function_ret($function) %> );
+% }
+
+1;
