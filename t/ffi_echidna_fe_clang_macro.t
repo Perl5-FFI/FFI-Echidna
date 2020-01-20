@@ -148,7 +148,7 @@ subtest 'compile' => sub {
   my $macro;
 
   my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new(
-    cflags => '-Icorpus/ffi_echidna_fe_clang_wrapper/macro',
+    cflags => '-Icorpus/ffi_echidna_fe_clang',
     headers => ['macro1.h','macro2.h'],
   );
 

@@ -12,6 +12,7 @@ use Text::ParseWords qw( shellwords );
 use Data::Section::Simple qw( get_data_section );
 use Data::Dumper 2.173 ();
 use Mojo::Template;
+use JSON::MaybeXS qw( decode_json );
 
 # ABSTRACT: Clang wrapper
 # VERSION
@@ -322,6 +323,47 @@ sub compute_macro
   $self->log("value = $value");
 
   ($e_type, $value);
+}
+
+sub ast
+{
+  my($self, $source) = @_;
+  $source = $self->source_template('headers.c') unless defined $source;
+  my $dir = Path::Tiny->tempdir;
+  my $c_file = $dir->child('ast.c');
+  $c_file->spew($source);
+
+  my($out, $err, $ret) = do { # -Xclang -ast-dump -fsyntax-only test.cc
+    my @cmd = ($self->cc, $self->cflags, '-Xclang', '-ast-dump=json', '-fsyntax-only', $c_file);
+    $self->log("+@cmd");
+    capture {
+      system @cmd;
+      $?;
+    };
+  };
+
+  if($ret)
+  {
+    $self->log("[out]\n$out") if $out ne '';
+    $self->log("[err]\n$err") if $err ne '';
+    $self->log("command failed");
+    die "Error generating AST";
+  }
+
+  my $payload = eval { decode_json($out) };
+
+  if(my $error = $@)
+  {
+    $self->log("[out]\n$out") if $out ne '';
+    $self->log("[err]\n$err") if $err ne '';
+    $self->log("error decoding JSON: $error");
+    die "Error generating AST";
+  }
+
+  $self->log("[out]\n### SNIP JSON OUTPUT ###");
+  $self->log("[err]\n$err");
+
+  $payload;
 }
 
 1;

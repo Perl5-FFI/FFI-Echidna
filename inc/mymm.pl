@@ -6,7 +6,7 @@ use 5.020;
 use ExtUtils::MakeMaker ();
 require './lib/FFI/Echidna/FE/Clang/Finder.pm';
 
-return if $ENV{CIPSTATIC} eq 'true';
+return if $ENV{CIPSTATIC} && $ENV{CIPSTATIC} eq 'true';
 
 my $clang = FFI::Echidna::FE::Clang::Finder->new;
 unless(defined $clang)

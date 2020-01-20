@@ -1,5 +1,6 @@
 use Test2::V0 -no_srand => 1;
 use FFI::Echidna::FE::Clang::Wrapper;
+use YAML ();
 
 FFI::Echidna::FE::Clang::Wrapper->default_logger(do {
   open my $fh, '>>', 'test.log';
@@ -46,7 +47,7 @@ subtest 'version' => sub {
 subtest 'raw macros' => sub {
 
   my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new(
-    cflags => '-Icorpus/ffi_echidna_fe_clang_wrapper/macro',
+    cflags => '-Icorpus/ffi_echidna_fe_clang',
     headers => ['macro1.h','macro2.h'],
   );
 
@@ -84,7 +85,7 @@ subtest 'raw macros' => sub {
 
 subtest 'compute_macro' => sub {
   my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new(
-    cflags => '-Icorpus/ffi_echidna_fe_clang_wrapper/macro',
+    cflags => '-Icorpus/ffi_echidna_fe_clang',
     headers => ['macro1.h','macro2.h'],
   );
 
@@ -118,6 +119,36 @@ subtest 'compute_macro' => sub {
     $wrapper->compute_macro( name => 'BOGUS' );
   };
   like "$@", qr/Error computing macro BOGUS/;
+
+};
+
+subtest 'ast' => sub {
+
+  subtest 'empty (ish)' => sub {
+
+    my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new;
+
+    local $@ = '';
+    my $ast = eval { $wrapper->ast };
+    is "$@", '';
+
+    is ref($ast), 'HASH';
+
+    note YAML::Dump($ast);
+  };
+
+  subtest 'stdint.h' => sub {
+
+    my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new( headers => 'stdint.h' );
+
+    local $@ = '';
+    my $ast = eval { $wrapper->ast };
+    is "$@", '';
+
+    is ref($ast), 'HASH';
+
+    note YAML::Dump($ast);
+  };
 
 };
 
