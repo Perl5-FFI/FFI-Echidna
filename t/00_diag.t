@@ -9,11 +9,16 @@ eval { require 'Test/More.pm' };
 my %modules;
 my $post_diag;
 
+BEGIN { eval q{ use EV; } }
 $modules{$_} = $_ for qw(
   Capture::Tiny
   Cpanel::JSON::XS
   Data::Dumper
+  Data::Section::Simple
+  EV
   ExtUtils::MakeMaker
+  FFI::Build
+  FFI::Platypus
   File::ShareDir::Install
   File::Which
   File::chdir

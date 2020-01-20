@@ -110,10 +110,7 @@ sub version
     my $dir = Path::Tiny->tempdir;
     local $CWD = $dir;
     my $c_file = Path::Tiny->new('version.c');
-    $c_file->spew(join "\n", '#include <stdio.h>',
-                             'int main() {',
-                             '  printf("v=|%d.%d.%d|\n", __clang_major__, __clang_minor__, __clang_patchlevel__);',
-                             '}');
+    $c_file->spew(get_data_section('src/version.c'));
     my($out, $ret) = capture_merged {
       print "[$c_file]\n";
       print $c_file->slurp, "\n";
@@ -163,10 +160,7 @@ sub get_raw_macros
   my $dir = Path::Tiny->tempdir;
 
   my $c_file = $dir->child('header.c');
-  $c_file->spew(join "\n",
-                map { "#include <$_>" }
-                $self->headers
-  );
+  $c_file->spew($self->source_template('headers.c'));
 
   my($out, $err, $ret) = capture {
       print "[$c_file]\n";
@@ -200,6 +194,16 @@ sub get_raw_macros
   @macros;
 }
 
+sub source_template
+{
+  my($self, $name, %stash) = @_;
+  my $template = get_data_section("template/$name");
+  die "unknown template $name" unless defined $template;
+  my $mt = Mojo::Template->new(vars => 1);
+  $stash{headers} //= [ $self->headers ];
+  $mt->render($template, \%stash);
+}
+
 sub compute_macro
 {
   my($self, %args) = @_;
@@ -213,10 +217,7 @@ sub compute_macro
 
     my $c_file = $dir->child('macro_type.c');
     $c_file->spew(
-      Mojo::Template->new(vars => 1)->render(
-        get_data_section('template/macro_type.c'),
-        { name => $args{name}, headers => [ $self->headers ] },
-      ),
+      $self->source_template('macro_type.c', name => $args{name}),
     );
 
     my $build = FFI::Build->new(
@@ -241,10 +242,7 @@ sub compute_macro
 
   my $c_file = $dir->child('macro_value.c');
   $c_file->spew(
-    Mojo::Template->new(vars => 1)->render(
-      get_data_section('template/macro_value.c'),
-      { name => $args{name}, type => $c_type, headers => [ $self->headers ] },
-    ),
+      $self->source_template('macro_value.c', name => $args{name}, type => $c_type),
   );
 
   my $build = FFI::Build->new(
@@ -269,6 +267,26 @@ sub compute_macro
 
 __DATA__
 
+
+@@ src/version.c
+#include <stdio.h>',
+int
+main()
+{
+  printf("v=|%d.%d.%d|\n",
+    __clang_major__,
+    __clang_minor__,
+    __clang_patchlevel__
+  );
+}
+
+
+@@ template/headers.c
+% foreach my $header (@$headers) {
+#include <<%= $header %>>
+% }
+
+
 @@ template/macro_value.c
 % foreach my $header (@$headers) {
 #include <<%= $header %>>
@@ -279,6 +297,7 @@ get_macro_value()
 {
   return <%= $name %>;
 }
+
 
 @@ template/macro_type.c
 % foreach my $header (@$headers) {
