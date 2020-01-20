@@ -209,7 +209,7 @@ sub compute_macro
 
   my $dir = Path::Tiny->tempdir;
 
-  my($c_type, $p_type) = do {
+  my($c_type, $p_type, $e_type) = do {
 
     my $c_file = $dir->child('macro_type.c');
     $c_file->spew(
@@ -234,8 +234,9 @@ sub compute_macro
 
     my $c_type = $ffi->function( get_macro_type_c        => [] => 'string' )->call;
     my $p_type = $ffi->function( get_macro_type_platypus => [] => 'string' )->call;
+    my $e_type = $ffi->function( get_macro_type_echidna  => [] => 'string' )->call;
 
-    ($c_type, $p_type);
+    ($c_type, $p_type, $e_type);
   };
 
   my $c_file = $dir->child('macro_value.c');
@@ -261,7 +262,7 @@ sub compute_macro
 
   my $value = $ffi->function( get_macro_value => [] => $p_type )->call;
 
-  ($p_type, $value);
+  ($e_type, $value);
 }
 
 1;
@@ -301,6 +302,26 @@ get_macro_type_c()
     unsigned long: "unsigned long",
     float: "float",
     double: "double"
+  );
+}
+
+const char *
+get_macro_type_echidna()
+{
+  return _Generic(<%= $name %>,
+    const char *: "string",
+    char *: "string",
+    signed char: "integer",
+    char: "integer",
+    unsigned char: "integer",
+    short: "integer",
+    unsigned short: "integer",
+    int: "integer",
+    unsigned int: "integer",
+    long: "integer",
+    unsigned long: "ineger",
+    float: "float",
+    double: "float"
   );
 }
 

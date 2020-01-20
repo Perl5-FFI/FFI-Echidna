@@ -81,7 +81,7 @@ subtest 'compute_macro' => sub {
 
   is
     [$wrapper->compute_macro( name => 'FOO' )],
-    ['int', 1]
+    ['integer', 1]
   ;
 
   is
@@ -91,12 +91,17 @@ subtest 'compute_macro' => sub {
 
   is
     [$wrapper->compute_macro( name => 'BAZ' )],
-    ['int',42]
+    ['integer',42]
   ;
 
   is
     [$wrapper->compute_macro( name => 'SOMETHING_ELSE' )],
-    ['int',3]
+    ['integer',3]
+  ;
+
+  is
+    [$wrapper->compute_macro( name => 'FLOATER' )],
+    ['float', 1.0]
   ;
 
 };
