@@ -20,4 +20,13 @@ subtest 'type' => sub {
 
 };
 
+subtest 'function' => sub {
+
+  my $ast = ast(cflags => '-Icorpus/ffi_echidna_fe_clang', headers => 'func1.h' );
+  isa_ok $ast, 'FFI::Echidna::FE::Clang::AST';
+
+  note $_ for $ast->dump;
+
+};
+
 done_testing;
