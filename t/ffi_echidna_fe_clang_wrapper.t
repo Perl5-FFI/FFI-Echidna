@@ -73,4 +73,32 @@ subtest 'raw macros' => sub {
 
 };
 
+subtest 'compute_macro' => sub {
+  my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new(
+    cflags => '-Icorpus/ffi_echidna_fe_clang_wrapper/macro',
+    headers => ['macro1.h','macro2.h'],
+  );
+
+  is
+    [$wrapper->compute_macro( name => 'FOO' )],
+    ['int', 1]
+  ;
+
+  is
+    [$wrapper->compute_macro( name => 'BAR' )],
+    ['string', 'hello']
+  ;
+
+  is
+    [$wrapper->compute_macro( name => 'BAZ' )],
+    ['int',42]
+  ;
+
+  is
+    [$wrapper->compute_macro( name => 'SOMETHING_ELSE' )],
+    ['int',3]
+  ;
+
+};
+
 done_testing;
