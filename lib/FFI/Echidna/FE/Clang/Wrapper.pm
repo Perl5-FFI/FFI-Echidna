@@ -209,7 +209,7 @@ sub compute_macro
 
   my $dir = Path::Tiny->tempdir;
 
-  my($c_type, $pl_type) = do {
+  my($c_type, $p_type) = do {
 
     my $c_file = $dir->child('macro_type.c');
     $c_file->spew(
@@ -232,10 +232,10 @@ sub compute_macro
 
     my $ffi = FFI::Platypus->new( api => 1, lib => $lib->path );
 
-    my $c_type  = $ffi->function( get_macro_type_c        => [] => 'string' )->call;
-    my $pl_type = $ffi->function( get_macro_type_platypus => [] => 'string' )->call;
+    my $c_type = $ffi->function( get_macro_type_c        => [] => 'string' )->call;
+    my $p_type = $ffi->function( get_macro_type_platypus => [] => 'string' )->call;
 
-    ($c_type, $pl_type);
+    ($c_type, $p_type);
   };
 
   my $c_file = $dir->child('macro_value.c');
@@ -259,9 +259,9 @@ sub compute_macro
 
   my $ffi = FFI::Platypus->new( api => 1, lib => $lib->path );
 
-  my $value = $ffi->function( get_macro_value => [] => $pl_type )->call;
+  my $value = $ffi->function( get_macro_value => [] => $p_type )->call;
 
-  ($pl_type, $value);
+  ($p_type, $value);
 }
 
 1;
