@@ -2,8 +2,9 @@ package FFI::Echidna::Constant;
 
 use strict;
 use warnings;
-use Carp qw( croak );
 use 5.020;
+use experimental qw( postderef );
+use Carp qw( croak );
 
 # ABSTRACT: Constant extracted for use with FFI
 # VERSION

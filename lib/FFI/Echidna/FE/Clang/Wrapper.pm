@@ -3,7 +3,7 @@ package FFI::Echidna::FE::Clang::Wrapper;
 use strict;
 use warnings;
 use 5.020;
-use feature 'postderef';
+use experimental 'postderef';
 use FFI::Echidna::FE::Clang::Finder;
 use Capture::Tiny qw( capture_merged capture );
 use File::chdir;

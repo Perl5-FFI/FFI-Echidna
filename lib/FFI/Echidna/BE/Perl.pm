@@ -2,9 +2,9 @@ package FFI::Echidna::BE::Perl;
 
 use strict;
 use warnings;
-use feature qw( postderef );
-use Data::Dumper 2.173 ();
 use 5.020;
+use experimental qw( postderef );
+use Data::Dumper 2.173 ();
 
 # ABSTRACT: Backend for generating Perl code
 # VERSION

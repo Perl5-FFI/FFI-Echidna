@@ -3,7 +3,7 @@ package FFI::Echidna::FE::Clang::Finder;
 use strict;
 use warnings;
 use 5.020;
-use feature 'postderef';
+use experimental 'postderef';
 use Config;
 use JSON::MaybeXS qw( decode_json );
 use Capture::Tiny qw( capture );

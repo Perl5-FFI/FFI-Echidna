@@ -2,8 +2,8 @@ package FFI::Echidna::Class;
 
 use strict;
 use warnings;
-use feature 'postderef';
 use 5.020;
+use experimental 'postderef';
 
 # ABSTRACT: Class extracted for use with FFI
 # VERSION
