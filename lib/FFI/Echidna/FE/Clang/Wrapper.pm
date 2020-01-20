@@ -204,9 +204,6 @@ sub compute_macro
 {
   my($self, %args) = @_;
 
-  state $counter=1;
-  $counter++;
-
   require FFI::Build;
   require FFI::Platypus;
 
@@ -223,7 +220,7 @@ sub compute_macro
     );
 
     my $build = FFI::Build->new(
-      "type$counter",
+      "type",
       dir     => "$dir",
       source  => "$c_file",
       verbose => 0,
@@ -250,7 +247,7 @@ sub compute_macro
   );
 
   my $build = FFI::Build->new(
-    "value$counter",
+    "value",
     dir     => "$dir",
     source  => "$c_file",
     verbose => 0,
