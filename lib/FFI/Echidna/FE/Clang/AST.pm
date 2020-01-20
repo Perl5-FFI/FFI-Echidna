@@ -228,4 +228,32 @@ sub as_string
   $str;
 }
 
+package FFI::Echidna::FE::Clang::AST::Index;
+
+use strict;
+use warnings;
+use 5.020;
+use experimental qw( postderef );
+
+sub new
+{
+  my($class, $ast) = @_;
+
+  my %self;
+
+  $ast->foreach(sub {
+    my($ast) = @_;
+    my $id = $ast->id;
+    push $self{$id}->@*, $ast;
+  });
+
+  bless \%self, $class;
+}
+
+sub get
+{
+  my($self, $key) = @_;
+  $self->{$key} ? $self->{$key}->[0] : undef;
+}
+
 1;

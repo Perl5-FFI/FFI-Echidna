@@ -1,6 +1,7 @@
 use Test2::V0 -no_srand => 1;
 use FFI::Echidna::FE::Clang::AST;
 use FFI::Echidna::FE::Clang::Wrapper;
+use YAML ();
 
 FFI::Echidna::FE::Clang::Wrapper->default_logger(sub {
   note "FE::Clang::Wrapper: $_[0]";
@@ -27,6 +28,19 @@ subtest 'type' => sub {
 
     ok 1;
 
+  };
+
+  subtest 'index' => sub {
+
+    my $index = FFI::Echidna::FE::Clang::AST::Index->new($ast);
+    isa_ok $index, 'FFI::Echidna::FE::Clang::AST::Index';
+
+    is
+      $index->get($ast->id),
+      object {
+        call kind => $ast->kind;
+      }
+    ;
   };
 
 };
