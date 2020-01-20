@@ -1,5 +1,15 @@
 use Test2::V0 -no_srand => 1;
 use FFI::Echidna::FE::Clang::Macro;
+use FFI::Echidna::FE::Clang::Wrapper;
+
+FFI::Echidna::FE::Clang::Wrapper->default_logger(do {
+  open my $fh, '>>', 'test.log';
+  END { close $fh };
+  sub {
+    my($line) = @_;
+    print $fh "FE::Clang::Wrapper: $line\n";
+  }
+});
 
 subtest 'basic' => sub {
 

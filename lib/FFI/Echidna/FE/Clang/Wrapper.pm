@@ -10,6 +10,7 @@ use File::chdir;
 use Path::Tiny ();
 use Text::ParseWords qw( shellwords );
 use Data::Section::Simple qw( get_data_section );
+use Data::Dumper 2.173 ();
 use Mojo::Template;
 
 # ABSTRACT: Clang wrapper
@@ -91,16 +92,40 @@ sub new
     libs         => \@libs,
     headers      => \@headers,
     macro_filter => $macro_filter,
+    logger       => __PACKAGE__->default_logger,
   }, $class;
 }
 
-sub finder       { shift->{finder}      }
-sub path         { shift->{path}        }
-sub cc           { shift->{cc}->@*      }
-sub cflags       { shift->{cflags}->@*  }
-sub libs         { shift->{libs}->@*    }
-sub headers      { shift->{headers}->@* }
+sub default_logger
+{
+  my($class, $new) = @_;
+  state $default;
+  if($new)
+  {
+    $default = $new;
+  }
+  else
+  {
+    $default //= sub { say STDERR "FFI::Echidna::FE::Clang::Wrapper: $_[0]" };
+  }
+  $default;
+}
+
+sub finder       { shift->{finder}       }
+sub path         { shift->{path}         }
+sub cc           { shift->{cc}->@*       }
+sub cflags       { shift->{cflags}->@*   }
+sub libs         { shift->{libs}->@*     }
+sub headers      { shift->{headers}->@*  }
 sub macro_filter { shift->{macro_filter} }
+sub logger       { shift->{logger}       }
+
+sub log
+{
+  my($self, $data) = @_;
+  chomp $data;
+  $self->logger->($_) for split /\n/, $data;
+}
 
 sub version
 {
@@ -110,34 +135,36 @@ sub version
     my $dir = Path::Tiny->tempdir;
     local $CWD = $dir;
     my $c_file = Path::Tiny->new('version.c');
-    $c_file->spew(get_data_section('src/version.c'));
-    my($out, $ret) = capture_merged {
-      print "[$c_file]\n";
-      print $c_file->slurp, "\n";
+    $c_file->spew($self->source('version.c'));
+    my($out, $ret) = do {
       my @cmd = ($self->cc, $self->cflags, -o => 'clang_version', $c_file);
-      print "+@cmd\n";
-      system @cmd;
-      $?;
+      $self->log("+@cmd");
+      capture_merged {
+        system @cmd;
+        $?;
+      };
     };
+
+    $self->log("[out/err]\n$out") if $out ne '';
 
     if($ret)
     {
-      print STDERR $out;
       die "compile failed while trying to determine clang version";
     }
 
-    ($out, $ret) = capture_merged {
-      print "[$c_file]\n";
-      print $c_file->slurp, "\n";
+    ($out, $ret) = do {
       my @cmd = ('./clang_version', '-foo');
-      print "+@cmd\n";
-      system @cmd;
-      $?;
+      $self->log("+@cmd");
+      capture_merged {
+        system @cmd;
+        $?;
+      };
     };
+
+    $self->log("[out/err]\n$out") if $out ne '';
 
     if($ret)
     {
-      print STDERR $out;
       die "execute failed while trying to determine clang version";
     }
 
@@ -147,7 +174,6 @@ sub version
     }
     else
     {
-      print STDERR $out;
       die "parse failed while trying to determine clang version";
     }
   };
@@ -162,21 +188,19 @@ sub get_raw_macros
   my $c_file = $dir->child('header.c');
   $c_file->spew($self->source_template('headers.c'));
 
-  my($out, $err, $ret) = capture {
-      print "[$c_file]\n";
-      print $c_file->slurp, "\n";
-      my @cmd = ($self->cc, $self->cflags, '-dM', '-E', $c_file);
-      print "+@cmd\n";
+  my($out, $err, $ret) = do {
+    my @cmd = ($self->cc, $self->cflags, '-dM', '-E', $c_file);
+    $self->log("+@cmd");
+    capture {
       system @cmd;
       $?;
+    };
   };
 
-  if($ret)
-  {
-    print STDERR $out;
-    print STDERR $err;
-    die "CPP failed extracting macros";
-  }
+  $self->log("[out]\n$out") if $out ne '';
+  $self->log("[err]\n$err") if $err ne '';
+
+  die "CPP failed extracting macros" if $ret;
 
   my @macros;
   require FFI::Echidna::FE::Clang::Macro;
@@ -194,6 +218,15 @@ sub get_raw_macros
   @macros;
 }
 
+sub source
+{
+  my($self, $name) = @_;
+  my $source = get_data_section("src/$name");
+  die "unknown source $name" unless defined $source;
+  $self->log("[src/$name]\n$source");
+  $source;
+}
+
 sub source_template
 {
   my($self, $name, %stash) = @_;
@@ -201,6 +234,9 @@ sub source_template
   die "unknown template $name" unless defined $template;
   my $mt = Mojo::Template->new(vars => 1);
   $stash{headers} //= [ $self->headers ];
+  $self->log("[template/$name @{[ Data::Dumper->new([\%stash])->Useqq(1)->Terse(1)->Indent(0)->Dump ]}]");
+  my $source = $mt->render($template, \%stash);
+  $self->log("$source");
   $mt->render($template, \%stash);
 }
 
@@ -220,22 +256,37 @@ sub compute_macro
       $self->source_template('macro_type.c', name => $args{name}),
     );
 
+    # TODO: it would be nice to be able to get both the type and
+    # the value from just one .so file but I haven't figured out
+    # how to do that yet.
     my $build = FFI::Build->new(
       "type",
       dir     => "$dir",
       source  => "$c_file",
-      verbose => 0,
+      verbose => 2,
       cflags  => [ $self->cflags ],
       libs    => [ $self->libs ],
     );
 
-    my $lib = $build->build;
+  my($out, $lib, $err) = capture_merged {
+    my $lib = eval { $build->build };
+    ($lib, "$@");
+  };
+
+    $self->log($out);
+    if($err) {
+      $self->log($err);
+      die "Error computing macro $args{name}";
+    }
 
     my $ffi = FFI::Platypus->new( api => 1, lib => $lib->path );
 
     my $c_type = $ffi->function( get_macro_type_c        => [] => 'string' )->call;
+    $self->log("c type = $c_type");
     my $p_type = $ffi->function( get_macro_type_platypus => [] => 'string' )->call;
+    $self->log("platypus type = $p_type");
     my $e_type = $ffi->function( get_macro_type_echidna  => [] => 'string' )->call;
+    $self->log("echidna type = $e_type");
 
     ($c_type, $p_type, $e_type);
   };
@@ -254,11 +305,21 @@ sub compute_macro
     libs    => [ $self->libs ],
   );
 
-  my $lib = $build->build;
+  my($out, $lib, $err) = capture_merged {
+    my $lib = eval { $build->build };
+    ($lib, "$@");
+  };
+
+  $self->log($out);
+  if($err) {
+    $self->log($err);
+    die "Error computing macro $args{name}";
+  }
 
   my $ffi = FFI::Platypus->new( api => 1, lib => $lib->path );
 
   my $value = $ffi->function( get_macro_value => [] => $p_type )->call;
+  $self->log("value = $value");
 
   ($e_type, $value);
 }

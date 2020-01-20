@@ -3,6 +3,7 @@ package mymm;
 use strict;
 use warnings;
 use 5.020;
+use ExtUtils::MakeMaker ();
 require './lib/FFI/Echidna/FE/Clang/Finder.pm';
 
 return if $ENV{CIPSTATIC} eq 'true';
@@ -16,5 +17,12 @@ unless(defined $clang)
 
 print "Found clang : @{[ $clang->path ]}\n";
 print "version     : @{[ $clang->human_version ]}\n";
+
+sub myWriteMakefile
+{
+  my %args = @_;
+  $args{clean} = {FILES => "test.log"};
+  ExtUtils::MakeMaker::WriteMakefile(%args);
+}
 
 1;

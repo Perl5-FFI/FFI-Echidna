@@ -1,6 +1,15 @@
 use Test2::V0 -no_srand => 1;
 use FFI::Echidna::FE::Clang::Wrapper;
 
+FFI::Echidna::FE::Clang::Wrapper->default_logger(do {
+  open my $fh, '>>', 'test.log';
+  END { close $fh };
+  sub {
+    my($line) = @_;
+    print $fh "FE::Clang::Wrapper: $line\n";
+  }
+});
+
 subtest 'basic construction' => sub {
 
   my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new;
@@ -103,6 +112,12 @@ subtest 'compute_macro' => sub {
     [$wrapper->compute_macro( name => 'FLOATER' )],
     ['float', 1.0]
   ;
+
+  local $@ = '';
+  eval {
+    $wrapper->compute_macro( name => 'BOGUS' );
+  };
+  like "$@", qr/Error computing macro BOGUS/;
 
 };
 
