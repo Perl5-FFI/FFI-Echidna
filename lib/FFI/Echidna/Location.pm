@@ -4,6 +4,10 @@ use strict;
 use warnings;
 use 5.020;
 use Path::Tiny ();
+use overload
+  '""' => sub { shift->as_string },
+  bool => sub { 1 },
+  fallback => 1;
 
 # ABSTRACT: Original location of FFI artifact
 # VERSION
@@ -78,5 +82,24 @@ The column.
 sub path   { shift->[0] }
 sub line   { shift->[1] }
 sub column { shift->[2] }
+
+=head1 METHODS
+
+=head2 as_string
+
+ my $str = $loc->as_string;
+
+=cut
+
+sub as_string
+{
+  my($self) = @_;
+  my $str = $self->path->stringify;
+  if(defined $self->line)
+  {
+    $str .= ":" . $self->line;
+    $str .= "." . $self->column if defined $self->column;
+  }
+}
 
 1;

@@ -139,7 +139,7 @@ subtest 'ast' => sub {
 
   subtest 'stdint.h' => sub {
 
-    my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new( headers => 'stdint.h' );
+    my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new( cflags => '-Icorpus/ffi_echidna_fe_clang', headers => 'type1.h' );
 
     local $@ = '';
     my $ast = eval { $wrapper->ast };

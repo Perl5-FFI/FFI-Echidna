@@ -27,7 +27,10 @@ $modules{$_} = $_ for qw(
   JSON::XS
   Mojolicious
   Path::Tiny
+  PerlX::Maybe
+  PerlX::Maybe::XS
   Test2::V0
+  YAML
 );
 
 $post_diag = sub {
