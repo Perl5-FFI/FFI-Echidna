@@ -11,6 +11,22 @@ use FFI::Echidna::Location;
 # ABSTRACT: Clang AST representation
 # VERSION
 
+=head1 DESCRIPTION
+
+This module is used internally by L<FFI::Echidna::FE::Clang>.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item L<FFI::Echidna>
+
+=item L<FFI::Echidna::FE::Clang>
+
+=back
+
+=cut
+
 sub new
 {
   my($class, $payload, $previous_location) = @_;
@@ -38,7 +54,7 @@ sub new
   };
 
   my @fields = (
-    map { maybe $_ => delete $payload->{$_} } qw( id name kind size ),
+    map { maybe $_ => delete $payload->{$_} } qw( id name kind size value ),
   );
 
   my @inner;
@@ -57,6 +73,7 @@ sub new
                 maybe is_referenced       => delete $payload->{isReferenced}       ? 1 : 0,
                 maybe complete_definition => delete $payload->{completeDefinition} ? 1 : 0,
                 maybe tag_used            => delete $payload->{tagUsed},
+                maybe value_category      => delete $payload->{valueCategory},
   ;
 
   foreach my $key (qw( decl ownedTagDecl ))
@@ -97,6 +114,8 @@ sub decl                { shift->{decl}                }
 sub owned_tag_decl      { shift->{owned_tag_decl}      }
 sub type                { shift->{type}                }
 sub tag_used            { shift->{tag_used}            }
+sub value_category      { shift->{value_category}      }
+sub value               { shift->{value}               }
 
 sub dump
 {
@@ -110,7 +129,7 @@ sub dump
     $first;
   };
 
-  foreach my $key (qw( id type name size is_implicit is_referenced tag_used ))
+  foreach my $key (qw( id type name size is_implicit is_referenced tag_used value value_category ))
   {
     my $value = $self->$key;
     if(defined $value)
@@ -141,7 +160,6 @@ sub dump
   }
 
   map { (' ' x 4) . $_ } @dump;
-
 }
 
 package FFI::Echidna::FE::Clang::AST::Type;
@@ -151,7 +169,9 @@ use warnings;
 use 5.020;
 use PerlX::Maybe;
 use overload
-  '""' => sub { shift->as_string };
+  '""' => sub { shift->as_string },
+  bool => sub { 1 },
+  fallback => 1;
 
 sub new
 {

@@ -29,4 +29,13 @@ subtest 'function' => sub {
 
 };
 
+subtest 'enum' => sub {
+
+  my $ast = ast(cflags => '-Icorpus/ffi_echidna_fe_clang', headers => 'enum1.h' );
+  isa_ok $ast, 'FFI::Echidna::FE::Clang::AST';
+
+  note $_ for $ast->dump;
+
+};
+
 done_testing;

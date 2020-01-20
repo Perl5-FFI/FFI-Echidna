@@ -10,6 +10,22 @@ use overload
 # ABSTRACT: Clang macro declaration
 # VERSION
 
+=head1 DESCRIPTION
+
+This module is used internally by L<FFI::Echidna::FE::Clang>.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item L<FFI::Echidna>
+
+=item L<FFI::Echidna::FE::Clang>
+
+=back
+
+=cut
+
 sub new
 {
   my($class, $name, $value, $wrapper) = @_;
