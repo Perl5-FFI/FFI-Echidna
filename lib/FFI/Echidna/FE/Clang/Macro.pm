@@ -36,6 +36,23 @@ sub as_string
   return "[Clang::Macro @{[ $self->name ]} -> @{[ $self->value ]}]";
 }
 
+sub compute_value
+{
+  my($self) = @_;
+  $self->parse_to_constant // $self->compile_to_constant;
+}
+
+sub compile_to_constant
+{
+  my($self) = @_;
+  my($type, $value) = $self->wrapper->compute_macro( name => $self->name );
+  FFI::Echidna::Constant->new(
+    name  => $self->name,
+    type  => $type,
+    value => $value,
+  );
+}
+
 sub parse_to_constant
 {
   my($self, $value) = @_;

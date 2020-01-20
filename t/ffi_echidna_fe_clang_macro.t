@@ -132,4 +132,67 @@ subtest 'parse' => sub {
 
 };
 
+subtest 'compile' => sub {
+
+  my $const;
+  my $macro;
+
+  my $wrapper = FFI::Echidna::FE::Clang::Wrapper->new(
+    cflags => '-Icorpus/ffi_echidna_fe_clang_wrapper/macro',
+    headers => ['macro1.h','macro2.h'],
+  );
+
+  my $cc = sub {
+    my($name) = @_;
+    $macro = FFI::Echidna::FE::Clang::Macro->new( $name => 22, $wrapper );
+    $const = $macro->compile_to_constant;
+    $const;
+  };
+
+  is
+    $cc->("FOO"),
+    object {
+      call name  => 'FOO';
+      call type  => 'integer';
+      call value => 1;
+    }
+  ;
+
+  is
+    $cc->("BAR"),
+    object {
+      call name  => 'BAR';
+      call type  => 'string';
+      call value => 'hello';
+    }
+  ;
+
+  is
+    $cc->("BAZ"),
+    object {
+      call name  => 'BAZ';
+      call type  => 'integer';
+      call value => 42;
+    }
+  ;
+
+  is
+    $cc->("SOMETHING_ELSE"),
+    object {
+      call name  => 'SOMETHING_ELSE';
+      call type  => 'integer';
+      call value => 3;
+    }
+  ;
+
+  is
+    $cc->("FLOATER"),
+    object {
+      call name  => 'FLOATER';
+      call type  => 'float';
+      call value => 1.0;
+    }
+  ;
+};
+
 done_testing;
