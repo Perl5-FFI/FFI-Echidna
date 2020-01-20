@@ -117,9 +117,38 @@ sub tag_used            { shift->{tag_used}            }
 sub value_category      { shift->{value_category}      }
 sub value               { shift->{value}               }
 
+sub foreach
+{
+  my $self = shift;
+  if(ref $_[0] eq 'CODE')
+  {
+    my($sub) = @_;
+    $sub->($self);
+  }
+  else
+  {
+    my($kind, $sub) = @_;
+    $sub->($self) if $self->kind eq $kind;
+  }
+
+  foreach my $key (qw( decl owned_tag_decl ))
+  {
+    my $ast = $self->$key;
+    next unless defined $ast;
+    $ast->foreach(@_);
+  }
+
+  foreach my $inner ($self->inner)
+  {
+    $inner->foreach(@_);
+  }
+}
+
 sub dump
 {
-  my($self) = @_;
+  my($self, $recurse) = @_;
+
+  $recurse //= 1;
 
   my @dump;
 
@@ -143,20 +172,22 @@ sub dump
     push @dump, 'raw: ' . encode_json($self->{raw});
   }
 
-  foreach my $key (qw( decl owned_tag_decl ))
+  if($recurse)
   {
-    my $other = $self->$key;
-    next unless defined $other;
-    push @dump, '';
-    push @dump, "$key:";
-    push @dump, $other->dump;
-  }
-
-  foreach my $inner ($self->inner)
-  {
-    push @dump, '';
-    push @dump, 'inner:';
-    push @dump, $inner->dump;
+    foreach my $key (qw( decl owned_tag_decl ))
+    {
+      my $other = $self->$key;
+      next unless defined $other;
+      push @dump, '';
+      push @dump, "$key:";
+      push @dump, $other->dump;
+    }
+    foreach my $inner ($self->inner)
+    {
+      push @dump, '';
+      push @dump, 'inner:';
+      push @dump, $inner->dump;
+    }
   }
 
   map { (' ' x 4) . $_ } @dump;

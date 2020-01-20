@@ -18,6 +18,17 @@ subtest 'type' => sub {
 
   note $_ for $ast->dump;
 
+
+  subtest 'foreach' => sub {
+
+    $ast->foreach(TypedefDecl => sub {
+      note $_ for shift->dump(0);
+    });
+
+    ok 1;
+
+  };
+
 };
 
 subtest 'function' => sub {
@@ -35,6 +46,23 @@ subtest 'enum' => sub {
   isa_ok $ast, 'FFI::Echidna::FE::Clang::AST';
 
   note $_ for $ast->dump;
+
+  note '';
+  note '';
+  note '';
+
+  $ast->foreach(EnumDecl => sub {
+
+    my $enum = shift;
+
+    note $enum->name;
+
+    foreach my $value ($enum->inner)
+    {
+      note "  ", $value->name;
+    }
+
+  });
 
 };
 
