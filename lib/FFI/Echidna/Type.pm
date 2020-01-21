@@ -5,6 +5,7 @@ use warnings;
 use 5.020;
 use experimental 'postderef';
 use Carp qw( croak );
+use PerlX::Maybe;
 
 # ABSTRACT: Type extracted for use with FFI
 # VERSION
@@ -51,13 +52,15 @@ sub new
     }
   }
 
+  my $alias = @alias > 0 ? \@alias : undef;
+
   bless {
-    name  => $args{name},
-    lang  => $args{lang},
-    type  => $args{type},
-    shape => $args{shape},
-    count => $args{count},
-    alias => \@alias,
+          name  => $args{name},
+          lang  => $args{lang},
+          type  => $args{type},
+          shape => $args{shape},
+    maybe count => $args{count},
+    maybe alias => $alias,
   }, $class;
 }
 
@@ -77,11 +80,11 @@ sub new
 
 =cut
 
-sub name  { shift->{name}      }
-sub lang  { shift->{lang}      }
-sub type  { shift->{type}      }
-sub shape { shift->{shape}     }
-sub count { shift->{count}     }
-sub alias { shift->{alias}->@* }
+sub name  { shift->{name}             }
+sub lang  { shift->{lang}             }
+sub type  { shift->{type}             }
+sub shape { shift->{shape}            }
+sub count { shift->{count}            }
+sub alias { @{ shift->{alias} // [] } }
 
 1;
