@@ -117,30 +117,35 @@ sub tag_used            { shift->{tag_used}            }
 sub value_category      { shift->{value_category}      }
 sub value               { shift->{value}               }
 
-sub foreach
+sub search
 {
   my $self = shift;
+
+  my $continue = 1;
+
   if(ref $_[0] eq 'CODE')
   {
     my($sub) = @_;
-    $sub->($self);
+    $continue = $sub->($self);
   }
   else
   {
     my($kind, $sub) = @_;
-    $sub->($self) if $self->kind eq $kind;
+    $continue = $sub->($self) if $self->kind eq $kind;
   }
+
+  return unless $continue;
 
   foreach my $key (qw( decl owned_tag_decl ))
   {
     my $ast = $self->$key;
     next unless defined $ast;
-    $ast->foreach(@_);
+    $ast->search(@_);
   }
 
   foreach my $inner ($self->inner)
   {
-    $inner->foreach(@_);
+    $inner->search(@_);
   }
 }
 
@@ -241,10 +246,11 @@ sub new
 
   my %self;
 
-  $ast->foreach(sub {
+  $ast->search(sub {
     my($ast) = @_;
     my $id = $ast->id;
     push $self{$id}->@*, $ast;
+    1;
   });
 
   bless \%self, $class;

@@ -32,12 +32,11 @@ sub new
   my $ast = $args{ast};
   croak "ast is required" unless defined $ast;
 
-  my $self = bless {
-  }, $class;
+  my $self = bless {}, $class;
 
   my %index;
 
-  $ast->foreach( TypedefDecl => sub {
+  $ast->search( TypedefDecl => sub {
     my $td = shift;
 
     # probably do not need these..
@@ -76,12 +75,30 @@ sub new
         $index{$id} = $self->add( $old->to_alias($name) );
         return;
       }
+      elsif($inner->kind eq 'PointerType')
+      {
+        my $old = $index{[$inner->inner]->[0]->decl->id};
+        die "no TypedefDecl for @{[ $inner->name ]} / @{[ $inner->id ]} found"
+          unless $old;
+        $index{$id} = $self->add( $old->to_pointer($name) );
+        return;
+      }
+      elsif($inner->kind =~ /^(Incomplete|Constant)ArrayType$/)
+      {
+        my $old = $index{[$inner->inner]->[0]->decl->id};
+        die "no TypedefDecl for @{[ $inner->name ]} / @{[ $inner->id ]} found"
+          unless $old;
+        $index{$id} = $self->add( $old->to_array($name, $inner->size) );
+        return;
+      }
     }
 
     if($args{unhandled})
     {
       $args{unhandled}->($td);
     }
+
+    return;
   });
 
   $self;

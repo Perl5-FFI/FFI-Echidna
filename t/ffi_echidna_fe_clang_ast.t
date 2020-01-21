@@ -22,8 +22,9 @@ subtest 'type' => sub {
 
   subtest 'foreach' => sub {
 
-    $ast->foreach(TypedefDecl => sub {
+    $ast->search(TypedefDecl => sub {
       note $_ for shift->dump(0);
+      1;
     });
 
     ok 1;
@@ -65,7 +66,7 @@ subtest 'enum' => sub {
   note '';
   note '';
 
-  $ast->foreach(EnumDecl => sub {
+  $ast->search(EnumDecl => sub {
 
     my $enum = shift;
 
@@ -75,6 +76,7 @@ subtest 'enum' => sub {
     {
       note "  ", $value->name;
     }
+    1;
 
   });
 

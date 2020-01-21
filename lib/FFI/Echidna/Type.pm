@@ -34,6 +34,9 @@ sub new
   croak "lang must be one of: c, asm"
     unless $args{lang} =~ /^(c|asm)$/;
 
+  croak "count must be a decimal integer"
+    if defined $args{count} && $args{count} !~ /^[0-9]+$/;
+
   croak "name must be provided"
     unless $args{name};
   croak "type must be provided"
@@ -104,6 +107,45 @@ sub to_alias
     shape => $self->shape,
     count => $self->count,
     alias => [$self->name, $self->alias],
+  );
+}
+
+=head2 to_pointer
+
+=cut
+
+sub to_pointer
+{
+  my($self, $new) = @_;
+  croak "can only convert scalar to pointer"
+    if $self->shape ne 'scalar';
+  my $class = ref $self;
+  $class->new(
+    name  => $new,
+    lang  => $self->lang,
+    type  => $self->type,
+    shape => 'pointer',
+    alias => [map { "$_*" } $self->name, $self->alias],
+  );
+}
+
+=head2 to_array
+
+=cut
+
+sub to_array
+{
+  my($self, $new, $count) = @_;
+  croak "can only convert scalar to pointer"
+    if $self->shape ne 'scalar';
+  my $class = ref $self;
+  $class->new(
+    name  => $new,
+    lang  => $self->lang,
+    type  => $self->type,
+    shape => 'array',
+    count => $count,
+    alias => [map { "${_}[@{[ $count // '' ]}]" } $self->name, $self->alias],
   );
 }
 

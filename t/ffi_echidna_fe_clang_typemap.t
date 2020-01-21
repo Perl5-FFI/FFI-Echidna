@@ -84,6 +84,56 @@ subtest 'indirect' => sub {
       call lang  => 'c';
       call shape => 'scalar';
       call type  => 'char';
+      call count      => U();
+      call_list alias => [];
+    },
+  ;
+
+  is
+    $tm->get('x3'),
+    object {
+      call name  => 'x3';
+      call lang  => 'c';
+      call shape => 'scalar';
+      call type  => 'char';
+      call count      => U();
+      call_list alias => ['x2','x1'];
+    },
+  ;
+
+  is
+    $tm->get('x3_ptr'),
+    object {
+      call name       => 'x3_ptr';
+      call lang       => 'c';
+      call shape      => 'pointer';
+      call type       => 'char';
+      call count      => U();
+      call_list alias => ['x3*','x2*','x1*'];
+    },
+  ;
+
+  is
+    $tm->get('x3_a3'),
+    object {
+      call name       => 'x3_a3';
+      call lang       => 'c';
+      call shape      => 'array';
+      call type       => 'char';
+      call count      => 3;
+      call_list alias => ['x3[3]','x2[3]','x1[3]'];
+    },
+  ;
+
+  is
+    $tm->get('x3_a'),
+    object {
+      call name       => 'x3_a';
+      call lang       => 'c';
+      call shape      => 'array';
+      call type       => 'char';
+      call count      => U();
+      call_list alias => ['x3[]','x2[]','x1[]'];
     },
   ;
 

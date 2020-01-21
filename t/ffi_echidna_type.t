@@ -19,33 +19,86 @@ subtest 'basic' => sub {
     }
   or note YAML::Dump($type1);
 
-  my $type2 = $type1->to_alias('bar');
+  subtest 'to_alias' => sub {
 
-  is
-    $type2,
-    object {
-      call name       => 'bar';
-      call lang       => 'c';
-      call type       => 'int';
-      call shape      => 'scalar';
-      call count      => U();
-      call_list alias => ['foo'];
-    }
-  or note YAML::Dump($type2);
+    my $type2 = $type1->to_alias('bar');
 
-  my $type3 = $type2->to_alias('baz');
+    is
+      $type2,
+      object {
+        call name       => 'bar';
+        call lang       => 'c';
+        call type       => 'int';
+        call shape      => 'scalar';
+        call count      => U();
+        call_list alias => ['foo'];
+      }
+    or note YAML::Dump($type2);
 
-  is
-    $type3,
-    object {
-      call name       => 'baz';
-      call lang       => 'c';
-      call type       => 'int';
-      call shape      => 'scalar';
-      call count      => U();
-      call_list alias => ['bar','foo'];
-    }
-  or note YAML::Dump($type3);
+    my $type3 = $type2->to_alias('baz');
+
+    is
+      $type3,
+      object {
+        call name       => 'baz';
+        call lang       => 'c';
+        call type       => 'int';
+        call shape      => 'scalar';
+        call count      => U();
+        call_list alias => ['bar','foo'];
+      }
+    or note YAML::Dump($type3);
+  };
+
+  subtest 'to_pointer' => sub {
+
+    my $type2 = $type1->to_pointer('bar');
+
+    is
+      $type2,
+      object {
+        call name       => 'bar';
+        call lang       => 'c';
+        call type       => 'int';
+        call shape      => 'pointer';
+        call count      => U();
+        call_list alias => ['foo*'];
+      },
+    or note YAML::Dump($type2);
+
+  };
+
+  subtest 'to_array' => sub {
+
+    my $type2 = $type1->to_array('bar', 10);
+
+    is
+      $type2,
+      object {
+        call name       => 'bar';
+        call lang       => 'c';
+        call type       => 'int';
+        call shape      => 'array';
+        call count      => 10;
+        call_list alias => ['foo[10]'];
+      },
+    or note YAML::Dump($type2);
+
+    my $type3 = $type1->to_array('bar');
+
+    is
+      $type3,
+      object {
+        call name       => 'bar';
+        call lang       => 'c';
+        call type       => 'int';
+        call shape      => 'array';
+        call count      => U();
+        call_list alias => ['foo[]'];
+      },
+    or note YAML::Dump($type3);
+
+  };
 
 };
 

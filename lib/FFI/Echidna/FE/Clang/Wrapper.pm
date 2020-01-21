@@ -361,7 +361,7 @@ sub ast
   }
 
   $self->log("[out]\n### SNIP JSON OUTPUT ###");
-  $self->log("[err]\n$err");
+  $self->log("[err]\n$err") if $err ne '';
 
   $payload;
 }
