@@ -20,7 +20,7 @@ subtest 'type' => sub {
   note $_ for $ast->dump;
 
 
-  subtest 'foreach' => sub {
+  subtest 'search' => sub {
 
     $ast->search(TypedefDecl => sub {
       note $_ for shift->dump(0);

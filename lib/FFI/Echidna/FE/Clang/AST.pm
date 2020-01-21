@@ -229,7 +229,7 @@ sub as_string
 {
   my($self) = @_;
   my $str = $self->qual_type;
-  $str .= ' (' . $self->desugared_qual_type . ')' if defined $self->desugared_qual_type;
+  $str .= ' .oO(' . $self->desugared_qual_type . ')' if defined $self->desugared_qual_type;
   $str;
 }
 
