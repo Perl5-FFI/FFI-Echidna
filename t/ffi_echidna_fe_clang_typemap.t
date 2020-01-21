@@ -64,6 +64,29 @@ subtest 'basic' => sub {
     },
   ;
 
+};
+
+subtest 'indirect' => sub {
+
+  tm q{
+    typedef char x1;
+    typedef x1 x2;
+    typedef x2 x3;
+    typedef x3 *x3_ptr;
+    typedef x3 x3_a[];
+    typedef x3 x3_a3[3];
+  };
+
+  is
+    $tm->get('x1'),
+    object {
+      call name  => 'x1';
+      call lang  => 'c';
+      call shape => 'scalar';
+      call type  => 'char';
+    },
+  ;
+
   use YAML ();
   note YAML::Dump($tm);
 

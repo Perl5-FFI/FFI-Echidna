@@ -35,6 +35,8 @@ sub new
   my $self = bless {
   }, $class;
 
+  my %index;
+
   $ast->foreach( TypedefDecl => sub {
     my $td = shift;
 
@@ -42,31 +44,43 @@ sub new
     return if $td->name =~ /^(__NSConstantString|__builtin_ms_va_list|__va_list_tag|__builtin_va_list)$/;
 
     my($inner) = $td->inner;
-    if(defined $inner && $inner->kind eq 'BuiltinType')
+    if(defined $inner)
     {
+      my $id   = $td->id;
+      my $name = $td->name;
 
-      my $type = $td->type->qual_type;
-      my $lang = 'c';
-
-      if( $type eq '__int128')
+      if($inner->kind eq 'BuiltinType')
       {
-        $type = 'sint128';
-        $lang = 'asm';
-      }
-      elsif( $type eq 'unsigned __int128')
-      {
-        $type = 'uint128';
-        $lang = 'asm';
-      }
+        my $type = $td->type->qual_type;
+        my $lang = 'c';
 
-      $self->add( name => $td->name, type => $type );
+        if( $type eq '__int128')
+        {
+          $type = 'sint128';
+          $lang = 'asm';
+        }
+        elsif( $type eq 'unsigned __int128')
+        {
+          $type = 'uint128';
+          $lang = 'asm';
+        }
+
+        $index{$id} = $self->add( name => $name, type => $type );
+        return;
+      }
+      elsif($inner->kind eq 'TypedefType')
+      {
+        my $old = $index{$inner->decl->id};
+        die "no TypedefDecl for @{[ $inner->name ]} / @{[ $inner->id ]} found"
+          unless $old;
+        $index{$id} = $self->add( $old->to_alias($name) );
+        return;
+      }
     }
-    else
+
+    if($args{unhandled})
     {
-      if($args{unhandled})
-      {
-        $args{unhandled}->($td);
-      }
+      $args{unhandled}->($td);
     }
   });
 
@@ -76,7 +90,7 @@ sub new
 sub add
 {
   my $self = shift;
-  my $type = FFI::Echidna::Type->new(@_);
+  my $type = @_ % 2 ? shift : FFI::Echidna::Type->new(@_);
   my $name = $type->name;
   $self->{$name} = $type;
 }

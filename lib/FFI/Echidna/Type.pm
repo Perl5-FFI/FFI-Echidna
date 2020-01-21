@@ -87,4 +87,24 @@ sub shape { shift->{shape}            }
 sub count { shift->{count}            }
 sub alias { @{ shift->{alias} // [] } }
 
+=head1 METHODS
+
+=head2 to_alias
+
+=cut
+
+sub to_alias
+{
+  my($self, $new) = @_;
+  my $class = ref $self;
+  $class->new(
+    name  => $new,
+    lang  => $self->lang,
+    type  => $self->type,
+    shape => $self->shape,
+    count => $self->count,
+    alias => [$self->name, $self->alias],
+  );
+}
+
 1;
